@@ -5,54 +5,58 @@ let isPaused = false;
 const bell = document.getElementById("bell");
 
 
+function magic_start(seconds, typeStart){
+    if(typeStart === 'start'){
+        bell.pause();
+        bell.currentTime = 0;
+        $("#pause").text("Pause");
+        isPaused = false;
+        bell.play();
+        document.getElementById("stop").disabled = false;
+        document.getElementById("stop").style.opacity = "1";
+        document.getElementById("pause").disabled = false;
+        document.getElementById("pause").style.opacity = "1";
+        timer(seconds);
+    }else if(typeStart === 'restart'){
+        document.getElementById("stop").disabled = false;
+        document.getElementById("stop").style.opacity = "1";
+        document.getElementById("pause").disabled = false;
+        document.getElementById("pause").style.opacity = "1";
+        timer(seconds);
+    }else{
+        bell.pause();
+        bell.currentTime = 0;
+        $("#pause").text("Pause");
+        isPaused = false;
+        bell.play();
+        document.getElementById("stop").disabled = false;
+        document.getElementById("stop").style.opacity = "1";
+        document.getElementById("pause").disabled = false;
+        document.getElementById("pause").style.opacity = "1";
+        timer(seconds);
+    }
 
-
-function start(seconds){
-    bell.play();
-    document.getElementById("stop").disabled = false;
-    document.getElementById("stop").style.opacity = "1";
-    document.getElementById("pause").disabled = false;
-    document.getElementById("pause").style.opacity = "1";
-    timer(this.dataset.time);
-}
-
-
-function restart(seconds){
-    document.getElementById("stop").disabled = false;
-    document.getElementById("stop").style.opacity = "1";
-    document.getElementById("pause").disabled = false;
-    document.getElementById("pause").style.opacity = "1";
-    timer(seconds);
-}
-
-function startSubmit(seconds){
-    document.getElementById("stop").disabled = false;
-    document.getElementById("stop").style.opacity = "1";
-    document.getElementById("pause").disabled = false;
-    document.getElementById("pause").style.opacity = "1";
-    timer(seconds);
-}
-
-function timer(seconds){
-    clearInterval(countdown);
-    const now = Date.now();
-    const then = now + seconds * 1000;
-    displayTime(seconds);
+    function timer(seconds){
+        clearInterval(countdown);
+        const now = Date.now();
+        const then = now + seconds * 1000;
+        displayTime(seconds);
+        
+        countdown = setInterval(() =>{
+            const secondsLeft = Math.round((then - Date.now()) / 1000);
     
-    countdown = setInterval(() =>{
-        const secondsLeft = Math.round((then - Date.now()) / 1000);
-
-        if(secondsLeft < 0){
-            bell.play();
-            clearInterval(countdown);
-            document.getElementById("stop").disabled = true;
-            document.getElementById("stop").style.opacity = "0";
-            document.getElementById("pause").disabled = true;
-            document.getElementById("pause").style.opacity = "0";
-            return;
-        }
-        displayTime(secondsLeft);
-    }, 1000);
+            if(secondsLeft < 0){
+                bell.play();
+                clearInterval(countdown);
+                document.getElementById("stop").disabled = true;
+                document.getElementById("stop").style.opacity = "0";
+                document.getElementById("pause").disabled = true;
+                document.getElementById("pause").style.opacity = "0";
+                return;
+            }
+            displayTime(secondsLeft);
+        }, 1000);
+    }
 }
 
 
@@ -65,12 +69,15 @@ function displayTime(seconds){
 }
 
 function pauseTime(){
+    bell.pause();
+    bell.currentTime = 0;
     let restart_moment = $('.display__time-left').text();
     let secondsFromMoment = getSecondsFromString(restart_moment);
     if(isPaused){
+        bell.play();
         $("#pause").text("Pause");
         isPaused = false;
-        restart(secondsFromMoment);
+        magic_start(secondsFromMoment, 'restart');
         return;
     }
  
@@ -81,6 +88,8 @@ function pauseTime(){
 }
 
 function stopTime(){
+    bell.pause();
+    bell.currentTime = 0;
     clearInterval(countdown);
     $('.display__time-left').text("0: 00");
     isPaused = false;
@@ -119,11 +128,14 @@ function getSecondsFromString(str){
 
 
 
-buttons.forEach(button => button.addEventListener('click', start));
+buttons.forEach(button => button.addEventListener('click', function(e){
+    e.preventDefault();
+    magic_start(this.dataset.time, 'start');
+}));
 document.customForm.addEventListener('submit', function(e){
     e.preventDefault();
     const mins = this.minutes.value;
-    startSubmit(mins * 60)
+    magic_start(mins * 60, 'submitStart');
 });
 
 const pause = document.getElementById("pause");
